@@ -1,0 +1,25 @@
+1. Open project folder.
+2. To run the project. First open git bash from inside the project folder or open the project in vs code and use git bash through terminal there.
+3. Then install the dependencies, packages, that is mainly used in the project like excelJS, mysql2, etc.
+4. After installing the packages, we have to establish the database. So, make a connection named as "time-tracker". Then, you can create a SQL file and paste the DB code that i have shared with you.
+5. Now you can run the project in electron fiddle.
+6. Login page will pop up.
+7. There is only one admin, which email, password are "admin@gmail.com" and "admin123" respectively. This admin only has the authority to convert other user as admin. Otherwise, the user cannot registered themselves as admin.
+8. So, if a person has not registered then, the following person can register their account, and login as a user to our desktop application.
+9. In user dashboard:
+whenever the person logins, a welcome message followed by the user status and notification in the top right corner of the navigation panel will be displayed.
+The menu options can be accessed by clicking the TT logo, where the options are dashboard, activity-log and screenshots.
+You have to click the button named as "start-tracking" and then the timer of the user starts.
+Idle time starts after 10 seconds of not touching/clicking. So in the starting of it, a screenshot will be captured. Or else, the screenshot will be captured in 30 second time interval of normal working time.
+Note: It is yet to make screenshots be captured during the working time only. It will help to save storage. 
+We can check activity log, by selecting it in the menu option and track our activities.
+Also if we want to stop the timer than there is stop break button in the dashboard or we can directly click the logout button, which will direct us back to login page. Also a activity log excel file will be automatically saved of the user in the documents.
+
+10. In admin dashboard:
+Admin logins and the dashboard loads, which showcases metric boards representing the active users, total users, today activities.
+There are three options in admin dashboard i.e. Dashboard, user management, and reports.
+
+We talked about the metric boards in dashboard.
+Now, in user management, the admin can activate/deactivate/delete a user account and also promote it to admin.
+In report section the admin can generate activity log/ attendance file of particular user, all user or its own.
+Note: The screenshots are being captured for admin and activity log of its too is being generated automatically. It has yet to be fixed.

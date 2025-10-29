@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prosetech's Time Tracker</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --panel:#ffffff; --panel-2:#ffffff; --border:#e5e7eb; --text:#0f172a;
+      --muted:#6b7280; --brand:#2563eb; --brand-2:#3b82f6; --danger:#ef4444; --success:#16a34a; --warning:#f59e0b;
+      --radius:14px; --shadow:0 10px 28px rgba(15,23,42,.08);
+      --blob-size:62vmin; --blur:70px; --opacity:.55;
+      --blobA:#a7c5ff; --blobB:#ffd6a5; --blobC:#c7f9cc; --blobD:#fbc2eb;
+      --ease:cubic-bezier(.22,.61,.36,1); --duration:.6s;
+    }
+    *{ box-sizing:border-box } html,body{ height:100% }
+    body{ margin:0; color:var(--text); background:var(--bg); font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; overflow-x:hidden; }
+
+    /* --- your existing styles (unchanged) --- */
+    .bg-aurora{ position:fixed; inset:-10%; z-index:-1; pointer-events:none; filter:blur(var(--blur)); opacity:var(--opacity) }
+    .bg-aurora span{ position:absolute; width:var(--blob-size); height:var(--blob-size); border-radius:50%; will-change:transform; mix-blend-mode:multiply }
+    .bg-aurora .a{ background:radial-gradient(circle at 30% 30%, var(--blobA), transparent 60%); animation:moveA 18s var(--ease) infinite alternate; left:-8%; top:-6% }
+    .bg-aurora .b{ background:radial-gradient(circle at 60% 40%, var(--blobB), transparent 60%); animation:moveB 22s var(--ease) infinite alternate; right:-10%; top:2% }
+    .bg-aurora .c{ background:radial-gradient(circle at 40% 60%, var(--blobC), transparent 60%); animation:moveC 20s var(--ease) infinite alternate; left:-6%; bottom:-8% }
+    .bg-aurora .d{ background:radial-gradient(circle at 50% 50%, var(--blobD), transparent 60%); animation:moveD 26s var(--ease) infinite alternate; right:-12%; bottom:-10% }
+    @keyframes moveA{ from{ transform:translate3d(6vw,4vh,0) scale(1.05) } to{ transform:translate3d(24vw,14vh,0) scale(1.18) } }
+    @keyframes moveB{ from{ transform:translate3d(-6vw,6vh,0) scale(1) } to{ transform:translate3d(-22vw,18vh,0) scale(1.15) } }
+    @keyframes moveC{ from{ transform:translate3d(10vw,-4vh,0) scale(1.08) } to{ transform:translate3d(28vw,-18vh,0) scale(1.22) } }
+    @keyframes moveD{ from{ transform:translate3d(-8vw,-6vh,0) scale(1.02) } to{ transform:translate3d(-26vw,-22vh,0) scale(1.2) } }
+    @media (prefers-reduced-motion:reduce){ .bg-aurora{ opacity:.25; filter:blur(42px) } .bg-aurora span{ animation:none!important } }
+
+    .wrap{ max-width:1100px; margin:40px auto; padding:0 20px }
+    header.appbar{ position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.78));
+      border-bottom:1px solid var(--border); padding:14px 20px; border-radius:0 0 var(--radius) var(--radius); box-shadow:var(--shadow);
+      animation:slideDown var(--duration) var(--ease) both; }
+    .brand{ display:flex; align-items:center; gap:12px; font-weight:800 }
+    .brand .logo{ width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#e0e7ff,#bfdbfe);
+      display:grid; place-items:center; font-size:18px; color:#1f2937; font-weight:900; box-shadow:inset 0 0 10px rgba(255,255,255,.8), 0 4px 12px rgba(37,99,235,.18); animation:popIn .5s var(--ease) both }
+
+    .grid{ display:grid; gap:18px; margin-top:24px; grid-template-columns:1.2fr .8fr }
+    @media (max-width:900px){ .grid{ grid-template-columns:1fr } }
+
+    .card{ background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; animation:fadeUp var(--duration) var(--ease) both }
+    .card:nth-of-type(1){ animation-delay:.05s } .card:nth-of-type(2){ animation-delay:.12s } .card:nth-of-type(3){ animation-delay:.18s }
+    .card:hover{ transform:translateY(-2px); transition:transform .18s var(--ease) }
+    h2{ margin:6px 0 12px; font-size:20px } .sub{ color:var(--muted); font-size:13px }
+
+    .statusbar{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; background:#ffffffaa; border:1px solid var(--border);
+      padding:10px 12px; border-radius:12px; margin:10px 0 16px; backdrop-filter:blur(4px) }
+    .pill{ padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--muted); font-size:13px; display:inline-flex; gap:8px; align-items:center; box-shadow:0 1px 0 rgba(0,0,0,.03) }
+    .dot{ width:8px; height:8px; border-radius:50%; background:#cbd5e1 }
+    .good .dot{ background:var(--success); animation:pulse 1.6s ease-in-out infinite }
+    .warn .dot{ background:var(--warning); animation:pulse 1.6s ease-in-out infinite }
+    .bad  .dot{ background:var(--danger);  animation:pulse 1.6s ease-in-out infinite }
+
+    form.inline{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin:6px 0 0 }
+    label{ font-size:13px; color:var(--muted) }
+    input[type="number"]{ width:220px; padding:12px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); outline:none; transition: box-shadow .2s var(--ease), transform .06s var(--ease) }
+    input::placeholder{ color:#9aa3b2 } input:focus{ box-shadow:0 0 0 4px rgba(37,99,235,.15); transform:translateY(-1px); border-color:#c7d2fe }
+
+    .btn{ appearance:none; border:0; padding:11px 16px; border-radius:10px; cursor:pointer; font-weight:700; color:white;
+      background:linear-gradient(180deg,var(--brand),var(--brand-2));
+      transition:transform .08s var(--ease), box-shadow .2s var(--ease), filter .2s var(--ease);
+      box-shadow:0 8px 18px rgba(37,99,235,.25), inset 0 -2px 0 rgba(0,0,0,.15); position:relative; overflow:hidden }
+    .btn:hover{ transform:translateY(-2px); filter:brightness(1.03) } .btn:active{ transform:translateY(0); box-shadow:inset 0 2px 0 rgba(0,0,0,.2) }
+    .btn.secondary{ background:linear-gradient(180deg,#e5e7eb,#d1d5db); color:#1f2937; box-shadow:none }
+    .btn.danger{ background:linear-gradient(180deg,#ef4444,#dc2626) }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none }
+    .btn::after{ content:""; position:absolute; inset:0; background:radial-gradient(600px 180px at var(--x,50%) var(--y,50%), rgba(255,255,255,.35), transparent 40%); opacity:0; transition:opacity .3s var(--ease) }
+    .btn:hover::after{ opacity:.7 }
+
+    .controls{ display:flex; gap:10px; flex-wrap:wrap }
+    .list{ display:grid; gap:12px }
+    .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:#fff; transition: transform .18s var(--ease), box-shadow .18s var(--ease) }
+    .row:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(15,23,42,.06) }
+
+    .shots{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px }
+    .shot{ position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--border); background:#f5f7fb; aspect-ratio:16/10; box-shadow:0 6px 18px rgba(15,23,42,.06); transform:translateZ(0) }
+    .shot img{ width:100%; height:100%; object-fit:cover; transform:scale(1); transition:transform .5s var(--ease), opacity .35s var(--ease); opacity:.95 }
+    .shot:hover img{ transform:scale(1.06) }
+    .shot .ts{ position:absolute; bottom:8px; left:8px; font-size:12px; padding:4px 6px; border-radius:8px; background:rgba(255,255,255,.9); color:#0f172a; border:1px solid var(--border); transform:translateY(8px); opacity:0; transition:all .25s var(--ease); backdrop-filter:blur(4px) }
+    .shot:hover .ts{ transform:translateY(0); opacity:1 }
+
+    footer.note{ margin-top:14px; color:var(--muted); font-size:12.5px }
+    .hidden{ display:none !important }
+
+    @keyframes fadeUp{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes slideDown{ from{opacity:0; transform:translateY(-8px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes popIn{ 0%{transform:scale(.8); opacity:0} 60%{transform:scale(1.05); opacity:1} 100%{transform:scale(1)} }
+    @keyframes pulse{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.15) } }
+
+    /* --- NEW: menu triggered by clicking the TT logo --- */
+    /* keep it small & positioned near the logo so header placement remains identical */
+    .logo-button { background:transparent; border:0; padding:0; margin:0; display:inline-grid; place-items:center; cursor:pointer; }
+    .logo-button:focus { outline:2px solid rgba(37,99,235,.12); border-radius:10px; }
+  .logo-menu {
+    position:absolute;
+    left:20px;
+    top:62px;
+    width:220px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 14px 40px rgba(15,23,42,.12);
+    padding:6px;
+
+    /* ADD THESE LINES */
+    display:none;
+    pointer-events:none; /* prevent blocking clicks when hidden */
+    opacity:0;           /* optional, smooth fade */
+    transition:opacity .15s ease;
+    z-index:60;
+  }
+  .logo-menu.show {
+    display:block;
+    pointer-events:auto; /* enable interaction when visible */
+    opacity:1;
+    animation:fadeUp .14s var(--ease) both;
+  }
+    .logo-menu button{ width:100%; text-align:left; padding:10px 12px; border-radius:8px; border:0; background:transparent; cursor:pointer; font-weight:700; color:var(--text); }
+    .logo-menu button:hover{ background:linear-gradient(180deg,#f3f4f6,#eef2ff); }
+    .logo-menu button.active{ background:linear-gradient(90deg, rgba(59,130,246,.08), rgba(59,130,246,.03)); color:var(--brand); }
+
+    /* Views container: we'll show/hide these while header stays same */
+    .content-area { margin-top:18px; }
+    .view { display:block; }
+    .view.hidden { display:none; }
+
+    /* small accessibility tweaks for small screens */
+    @media (max-width:480px){
+      .logo-menu { left:10px; right:10px; width:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-aurora" aria-hidden="true">
+    <span class="a"></span><span class="b"></span><span class="c"></span><span class="d"></span>
+  </div>
+
+  <header class="appbar">
+    <div class="wrap brand" style="justify-content:space-between; align-items:center;">
+      <!-- LEFT: keep EXACT structure you had (logo TT + company title) -->
+      <div style="display:flex;align-items:center;gap:12px; position:relative;">
+        <!-- Make the TT logo a button that opens the menu (keeps same visual appearance) -->
+        <button id="logoBtn" class="logo-button" aria-haspopup="true" aria-expanded="false" title="Open menu (Dashboard / Screenshots / Activity)">
+          <div class="logo" aria-hidden="true">TT</div>
+        </button>
+
+        <div>Prosetech's Time Tracker</div>
+
+        <!-- The menu that opens on logo click (positioned absolutely relative to page) -->
+        <div id="logoMenu" class="logo-menu" role="menu" aria-labelledby="logoBtn">
+          <button role="menuitem" data-view="dashboard" id="menu-dashboard" class="active">Dashboard</button>
+          <button role="menuitem" data-view="screenshots" id="menu-screenshots">Screenshots</button>
+          <button role="menuitem" data-view="activity" id="menu-activity">Activity Log</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: keep EXACT structure you had (notifications + user status) -->
+      <div style="display:flex; align-items:center; gap:12px;">
+        <!-- Notifications -->
+        <div id="notif" style="position:relative; display:flex; align-items:center; gap:8px;">
+          <button id="notif-btn" aria-label="Notifications" title="Notifications" style="background:transparent;border:0;cursor:pointer;position:relative;padding:6px;border-radius:8px;">
+            <!-- simple bell SVG -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block">
+              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v0.68C7.64 5.36 6 7.929 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span id="notif-badge" style="position:absolute; top:2px; right:2px; min-width:18px; height:18px; padding:0 6px; border-radius:999px; background:#ef4444; color:#fff; font-size:12px; display:none; line-height:18px; text-align:center;">0</span>
+          </button>
+
+          <!-- dropdown (left as you had it) -->
+          <div id="notif-dropdown" class="hidden" style="position:absolute; right:0; top:36px; width:320px; max-height:360px; overflow:auto; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.12); z-index:50; padding:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 8px 10px 8px; border-bottom:1px solid var(--border); margin-bottom:8px;">
+              <strong>Notifications</strong>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button id="notif-mark-read" class="btn secondary" style="padding:6px 8px; font-size:12px;">Mark read</button>
+                <button id="notif-clear" class="btn secondary" style="padding:6px 8px; font-size:12px;">Clear</button>
+              </div>
+            </div>
+            <div id="notif-list" style="display:flex; flex-direction:column; gap:8px; padding-bottom:8px;">
+              <!-- notifications will be injected here -->
+            </div>
+            <div id="notif-empty" style="color:var(--muted); font-size:13px; text-align:center; padding:12px 8px;">No notifications</div>
+          </div>
+        </div>
+
+        <!-- user info -->
+        <div id="user-info" style="display:flex; align-items:center; gap:10px;">
+          <span id="status-indicator" style="width:15px; height:15px; border-radius:50%; display:inline-block; background:red;"></span>
+          <span id="user-text">User: Not logged in</span>
+          <span id="last-active" style="margin-left:10px; font-size:0.9em; color:#555;"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+<!-- DASHBOARD view (default) -->
+<!-- DASHBOARD view (default) - REMOVE LOGIN FORM -->
+<section id="view-dashboard" class="view">
+  <section class="card">
+    <div id="user-welcome">
+      <h2>Welcome, <span id="user-display-name">User</span>!</h2>
+      <p>You are logged in and ready to track your time.</p>
+    </div>
+
+    <div class="row" style="margin-top:14px; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:12px; flex-wrap:wrap;">
+        <div class="controls" style="align-items:center;">
+          <button id="start-btn" class="btn">Start Tracking</button>
+          <button id="stop-btn" class="btn secondary" disabled>Stop</button>
+          <button id="logout-btn" class="btn danger">Logout</button>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="pill" id="work-timer-pill"><strong>Work:</strong> <span id="work-timer">00:00:00</span></div>
+          <div class="pill" id="break-timer-pill"><strong>Break:</strong> <span id="break-timer">00:00:00</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; width:100%; justify-content:space-between;">
+        <div class="controls">
+          <button id="start-break-btn" class="btn secondary">Start Break</button>
+          <button id="stop-break-btn" class="btn secondary" disabled>Stop Break</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+
+<!-- SCREENSHOTS view (ONLY screenshots area) -->
+<section id="view-screenshots" class="view hidden">
+  <section class="card" style="grid-column:1 / -1;">
+    <h2>Recent Screenshots</h2>
+    <div id="shots-only" class="shots">
+      <!-- dynamically populated by renderer.js -->
+    </div>
+    <div id="shots-empty" class="text-muted" style="text-align:center; padding:20px;">
+      No screenshots yet
+    </div>
+  </section>
+</section>
+
+    <!-- ACTIVITY LOG view (ONLY activity list area) -->
+    <section id="view-activity" class="view hidden">
+      <section class="card" style="grid-column:1 / -1;">
+        <h2>Activity Log</h2>
+        <div id="activity-list-only" class="list">
+        </div>
+      </section>
+    </section>
+  </main>
+  <!-- ripple helper retained -->
+  <script>
+    document.addEventListener('pointermove', e => {
+      const t = e.target;
+      if (!t.classList?.contains('btn')) return;
+      const r = t.getBoundingClientRect();
+      t.style.setProperty('--x', (e.clientX - r.left) + 'px');
+      t.style.setProperty('--y', (e.clientY - r.top) + 'px');
+    });
+  </script>
+
+<script>
+(function(){
+  const logoBtn = document.getElementById('logoBtn');
+  const logoMenu = document.getElementById('logoMenu');
+  const menuButtons = logoMenu.querySelectorAll('button[role="menuitem"]');
+  const views = {
+    dashboard: document.getElementById('view-dashboard'),
+    screenshots: document.getElementById('view-screenshots'),
+    activity: document.getElementById('view-activity')
+  };
+
+  // Show view (keeps header intact)
+  function showView(name){
+    Object.keys(views).forEach(k=>{
+      if(k === name){
+        views[k].classList.remove('hidden');
+        // mark active menu button
+        logoMenu.querySelector(`[data-view="${k}"]`)?.classList.add('active');
+      } else {
+        views[k].classList.add('hidden');
+        logoMenu.querySelector(`[data-view="${k}"]`)?.classList.remove('active');
+      }
+    });
+    // close menu after selecting
+    toggleMenu(false);
+  }
+
+  // toggle menu open/close
+  function toggleMenu(open){
+    const isOpen = logoMenu.classList.contains('show');
+    const shouldOpen = (typeof open === 'boolean') ? open : !isOpen;
+    if(shouldOpen){
+      logoMenu.classList.add('show');
+      logoBtn.setAttribute('aria-expanded','true');
+      // focus first item for accessibility
+      menuButtons[0].focus();
+    } else {
+      logoMenu.classList.remove('show');
+      logoBtn.setAttribute('aria-expanded','false');
+      // logoBtn.focus();
+    }
+  }
+
+  // clicking the TT logo toggles the menu
+  logoBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleMenu();
+  });
+
+  // keyboard handling...
+  logoBtn.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      toggleMenu();
+    } else if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      toggleMenu(true);
+    }
+  });
+
+  // menu item click handlers...
+  menuButtons.forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const view = btn.dataset.view;
+      if(view) showView(view);
+    });
+    btn.addEventListener('keydown', function(e){
+      const idx = Array.prototype.indexOf.call(menuButtons, btn);
+      if(e.key === 'ArrowDown'){ e.preventDefault(); menuButtons[(idx+1)%menuButtons.length].focus(); }
+      if(e.key === 'ArrowUp'){ e.preventDefault(); menuButtons[(idx-1+menuButtons.length)%menuButtons.length].focus(); }
+      if(e.key === 'Escape'){ toggleMenu(false); }
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); btn.click(); }
+    });
+  });
+
+document.addEventListener('click', function(e){
+  const target = e.target;
+  // only close menu if click is truly outside menu AND not inside any form input
+  if(!logoMenu.contains(target) && target !== logoBtn && !logoBtn.contains(target) && target.closest('input,textarea,select') === null){
+    toggleMenu(false);
+  }
+});
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') toggleMenu(false); });
+
+  // initialize default
+  showView('dashboard');
+
+  // Optional: allow programmatic showView calls
+  window.showAppView = showView;
+})();
+</script>
+
+  <!-- IMPORTANT: load renderer AFTER DOM (left intact) -->
+  <script src="renderer.js"></script>
+</body>
+</html>

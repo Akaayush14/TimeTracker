@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard - Time Tracker</title>
+  <style>
+    :root {
+      --bg: #f8fafc; 
+      --panel: #ffffff; 
+      --border: #e2e8f0; 
+      --text: #1e293b;
+      --muted: #64748b; 
+      --brand: #2563eb; 
+      --brand-light: #3b82f6;
+      --danger: #dc2626; 
+      --success: #16a34a; 
+      --warning: #d97706; 
+      --radius: 12px; 
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    
+    body { 
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .admin-header {
+      background: white; 
+      border-bottom: 1px solid var(--border); 
+      padding: 1rem 2rem;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    
+    .admin-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--brand), var(--brand-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .admin-nav { 
+      display: flex; 
+      gap: 0.5rem; 
+      align-items: center;
+    }
+    
+    .admin-nav a { 
+      text-decoration: none; 
+      color: var(--muted); 
+      padding: 0.75rem 1.25rem; 
+      border-radius: var(--radius); 
+      transition: var(--transition);
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-nav a::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--brand);
+      transition: var(--transition);
+      transform: translateX(-50%);
+    }
+    
+    .admin-nav a.active { 
+      color: var(--brand);
+      background: rgba(37, 99, 235, 0.05);
+    }
+    
+    .admin-nav a.active::before {
+      width: 80%;
+    }
+    
+    .admin-nav a:hover { 
+      color: var(--brand);
+      background: rgba(37, 99, 235, 0.05);
+    }
+    
+    .admin-main { 
+      padding: 2rem; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+    }
+    
+    .card { 
+      background: white; 
+      border-radius: var(--radius); 
+      border: 1px solid var(--border); 
+      box-shadow: var(--shadow); 
+      margin-bottom: 2rem; 
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+    
+    .card-header { 
+      padding: 1.5rem; 
+      border-bottom: 1px solid var(--border); 
+      background: #f8fafc; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .card-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .card-body { 
+      padding: 1.5rem; 
+    }
+    
+    .stats-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+      gap: 1.5rem; 
+      margin-bottom: 2rem; 
+    }
+    
+    .stat-card { 
+      background: linear-gradient(135deg, white, #f8fafc);
+      padding: 2rem 1.5rem; 
+      border-radius: var(--radius); 
+      border-left: 4px solid var(--brand); 
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand), var(--brand-light));
+      transform: scaleX(0);
+      transition: var(--transition);
+    }
+    
+    .stat-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .stat-number { 
+      font-size: 2.5rem; 
+      font-weight: 800; 
+      color: var(--brand); 
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label { 
+      color: var(--muted); 
+      font-size: 0.9rem; 
+      font-weight: 500;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    th, td { 
+      padding: 1rem; 
+      text-align: left; 
+      border-bottom: 1px solid var(--border); 
+    }
+    
+    th { 
+      background: #f8fafc; 
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    tr { 
+      transition: var(--transition);
+    }
+    
+    tr:hover { 
+      background: #f8fafc; 
+      transform: scale(1.01);
+    }
+    
+    .btn { 
+      padding: 0.75rem 1.5rem; 
+      border: none; 
+      border-radius: var(--radius); 
+      cursor: pointer; 
+      font-weight: 600; 
+      transition: var(--transition);
+      text-decoration: none; 
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transition: var(--transition);
+      transform: translate(-50%, -50%);
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--brand), var(--brand-light));
+      color: white; 
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger { 
+      background: linear-gradient(135deg, var(--danger), #ef4444);
+      color: white; 
+    }
+    
+    .btn-success { 
+      background: linear-gradient(135deg, var(--success), #22c55e);
+      color: white; 
+    }
+    
+    .btn-warning { 
+      background: linear-gradient(135deg, var(--warning), #f59e0b);
+      color: white; 
+    }
+    
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    
+    .btn-sm { 
+      padding: 0.5rem 1rem; 
+      font-size: 0.8rem; 
+    }
+    
+    .form-group { 
+      margin-bottom: 1.5rem; 
+    }
+    
+    label { 
+      display: block; 
+      margin-bottom: 0.5rem; 
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    input, select { 
+      width: 100%; 
+      padding: 0.75rem; 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .modal { 
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-content { 
+      background: white; 
+      margin: 5% auto; 
+      padding: 2rem; 
+      border-radius: var(--radius); 
+      width: 90%; 
+      max-width: 500px;
+      box-shadow: var(--shadow-lg);
+      animation: slideIn 0.3s ease;
+    }
+    
+    .tab-content { 
+      display: none; 
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .tab-content.active { 
+      display: block; 
+    }
+    
+    .user-status-active { 
+      color: var(--success); 
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .user-status-active::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+    
+    .user-status-inactive { 
+      color: var(--danger); 
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .user-status-inactive::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--danger);
+      border-radius: 50%;
+    }
+    
+    .user-admin { 
+      color: var(--brand); 
+      font-weight: 600;
+    }
+    
+    .search-box { 
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 300px;
+      max-width: 100%;
+    }
+    
+    .pagination { 
+      display: flex; 
+      gap: 0.5rem; 
+      margin-top: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .page-item { 
+      padding: 0.75rem 1rem; 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius); 
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+    }
+    
+    .page-item:hover {
+      background: #f1f5f9;
+    }
+    
+    .page-item.active { 
+      background: var(--brand); 
+      color: white;
+      border-color: var(--brand);
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--brand);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .report-results {
+      background: #f8fafc;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .screenshot-thumb {
+      width: 100px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .screenshot-thumb:hover {
+      transform: scale(1.05);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+    
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .filters {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <nav class="admin-nav">
+      <a href="#" class="nav-link active" data-tab="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-link" data-tab="users">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        User Management
+      </a>
+      <a href="#" class="nav-link" data-tab="reports">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Reports
+      </a>
+      <button id="logout-btn" class="btn btn-danger">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Logout
+      </button>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="total-users">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="active-users">0</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="active-sessions">0</div>
+          <div class="stat-label">Active Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="today-activities">0</div>
+          <div class="stat-label">Today's Activities</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management Tab -->
+    <div id="users" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>User Management</h2>
+          <div class="filters">
+            <input type="text" id="user-search" placeholder="Search users..." class="search-box">
+            <button class="btn btn-primary" onclick="loadUsers()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <p>No users found</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination" id="users-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div id="reports" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Reports & Attendance</h2>
+        </div>
+        <div class="card-body">
+          <div class="filters">
+            <div class="filter-group">
+              <label>Select User:</label>
+              <select id="report-user">
+                <option value="all">All Users</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Date Range:</label>
+              <div style="display: flex; gap: 1rem;">
+                <input type="date" id="report-start-date">
+                <input type="date" id="report-end-date">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Report Type:</label>
+              <select id="report-type">
+                <option value="activity">Activity Log</option>
+                <option value="attendance">Attendance Report</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+            <button class="btn btn-success" onclick="exportToExcel()" id="export-excel-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+              </svg>
+              Export to Excel
+            </button>
+          </div>
+          
+          <div id="report-results" class="report-results" style="display: none;">
+            <h3>Report Results</h3>
+            <div id="report-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- User Edit Modal -->
+  <div id="user-modal" class="modal">
+    <div class="modal-content">
+      <h3>Edit User</h3>
+      <form id="user-form">
+        <input type="hidden" id="edit-user-id">
+        <div class="form-group">
+          <label>Full Name:</label>
+          <input type="text" id="edit-full-name" required>
+        </div>
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="edit-email" required>
+        </div>
+        <div class="form-group">
+          <label>Status:</label>
+          <select id="edit-status">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Admin Privileges:</label>
+          <select id="edit-is-admin">
+            <option value="0">User</option>
+            <option value="1">Admin</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin-renderer.js"></script>
+</body>
+</html>

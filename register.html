@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .container {
+      background:#fff;
+      padding:40px;
+      border-radius:12px;
+      box-shadow:0 15px 35px rgba(0,0,0,0.2);
+      width:400px;
+      max-width:90%;
+      text-align:center;
+    }
+    input, button {
+      width:100%;
+      margin-bottom:15px;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      font-size:16px;
+    }
+    button {
+      border:none;
+      background:#6a11cb;
+      color:#fff;
+      cursor:pointer;
+      transition:0.3s;
+    }
+    button:hover { background:#2575fc; }
+    h2 { margin-bottom:20px; }
+    #notif { font-size:14px; min-height:18px; margin-bottom:10px; color:red; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Register</h2>
+    <div id="notif"></div>
+    <input type="text" id="register-name" placeholder="Full Name">
+    <input type="email" id="register-email" placeholder="Email">
+    <input type="password" id="register-password" placeholder="Password">
+    <button id="register-btn">Register</button>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script>
+    const notifEl = document.getElementById('notif');
+    const registerBtn = document.getElementById('register-btn');
+    const nameInput = document.getElementById('register-name');
+    const emailInput = document.getElementById('register-email');
+    const passwordInput = document.getElementById('register-password');
+
+    registerBtn.addEventListener('click', async () => {
+      notifEl.textContent = '';
+      const fullName = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if(!fullName || !email || !password){
+        notifEl.textContent = "⚠️ Fill all fields";
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = "Registering...";
+
+      try {
+        const res = await window.api.register(fullName, email, password);
+        if(res.success){
+          notifEl.style.color = "green";
+          notifEl.textContent = "✅ Registered successfully! Redirecting to login...";
+          // Clear inputs
+          nameInput.value = '';
+          emailInput.value = '';
+          passwordInput.value = '';
+          setTimeout(() => window.location.href = "login.html", 1500);
+        } else {
+          notifEl.style.color = "red";
+          notifEl.textContent = res.message || "❌ Registration failed";
+        }
+      } catch(err){
+        console.error(err);
+        notifEl.style.color = "red";
+        notifEl.textContent = "❌ Registration error: " + (err.message || err);
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = "Register";
+      }
+    });
+
+    // Allow Enter key submission
+    [nameInput, emailInput, passwordInput].forEach(input => {
+      input.addEventListener('keydown', e => { if(e.key === 'Enter') registerBtn.click(); });
+    });
+  </script>
+</body>
+</html>

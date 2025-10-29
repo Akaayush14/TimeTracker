@@ -1,0 +1,22 @@
+{
+  "name": "time-tracker-electron",
+  "productName": "time-tracker-electron",
+  "description": "My Electron application description",
+  "keywords": [],
+  "main": "./main.js",
+  "version": "1.0.0",
+  "author": "Aayush Kharel",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "dayjs": "1.11.18",
+    "exceljs": "4.4.1-prerelease.0",
+    "googleapis": "159.0.0",
+    "mysql2": "3.14.5-canary.c091f1ba",
+    "screenshot-desktop": "1.15.2"
+  },
+  "devDependencies": {
+    "electron": "37.2.5"
+  }
+}

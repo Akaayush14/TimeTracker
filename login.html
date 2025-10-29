@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      display:flex; justify-content:center; align-items:center;
+      min-height:100vh; background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+    .card {
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 15px 35px rgba(0,0,0,0.2);
+      width:380px;
+      max-width:90%;
+      padding:40px 30px;
+      text-align:center;
+      animation:fadeIn 0.8s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform:translateY(-20px);}
+      to {opacity:1; transform:translateY(0);}
+    }
+    h1 { font-size:28px; color:#333; margin-bottom:30px; font-weight:600; }
+    input {
+      width:100%;
+      padding:14px 16px;
+      margin-bottom:20px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size:16px;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      border-color:#6a11cb;
+      box-shadow:0 0 10px rgba(106,17,203,0.2);
+      outline:none;
+    }
+    button {
+      width:100%;
+      padding:14px;
+      background:#6a11cb;
+      border:none;
+      border-radius:10px;
+      color:#fff;
+      font-size:16px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+    button:hover { background:#2575fc; }
+    .divider {
+      display:flex; align-items:center; text-align:center; margin:20px 0;
+    }
+    .divider::before, .divider::after {
+      content:''; flex:1; border-bottom:1px solid #ddd;
+    }
+    .divider:not(:empty)::before { margin-right:10px; }
+    .divider:not(:empty)::after { margin-left:10px; }
+    .register-link { font-size:14px; color:#555; margin-top:10px; }
+    .register-link a { color:#6a11cb; text-decoration:none; font-weight:600; }
+    .register-link a:hover { text-decoration:underline; }
+    #notif { margin-top:10px; font-size:14px; color:red; min-height:18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login</h1>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button id="login-btn">Login</button>
+    <div id="notif"></div>
+
+    <div class="divider">OR</div>
+
+    <div class="register-link">
+      Don't have an account? <a href="register.html">Register here</a>
+    </div>
+  </div>
+
+  <script>
+    const loginBtn = document.getElementById('login-btn');
+    const notifEl = document.getElementById('notif');
+    const loginEmailInput = document.getElementById('login-email');
+    const loginPasswordInput = document.getElementById('login-password');
+
+    loginBtn.addEventListener('click', async () => {
+        notifEl.textContent = '';
+        const email = loginEmailInput.value.trim();
+        const password = loginPasswordInput.value.trim();
+
+        if(!email || !password){
+            notifEl.textContent = "⚠️ Enter email and password";
+            return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+
+        try {
+            console.log('Attempting login for:', email);
+            const res = await window.api.loginEmail(email, password);
+            console.log('Full login response:', res);
+
+            if(res.success && res.user){
+                console.log('Login successful');
+                console.log('User object:', res.user);
+                console.log('isAdmin flag:', res.isAdmin);
+                console.log('User is_admin:', res.user.is_admin);
+                
+                // FIX: More robust admin check
+                const isAdmin = res.isAdmin === true || res.user.is_admin === 1 || res.user.is_admin === true;
+                console.log('Final isAdmin determination:', isAdmin);
+                
+                if (isAdmin) {
+                    console.log('Redirecting to admin dashboard');
+                    window.location.href = 'admin.html';
+                } else {
+                    console.log('Redirecting to user dashboard');
+                    window.location.href = 'index.html';
+                }
+            } else {
+                notifEl.textContent = res.message || '❌ Login failed';
+                loginEmailInput.focus();
+            }
+        } catch(err){
+            console.error('Login error:', err);
+            notifEl.textContent = '❌ Error: ' + (err.message || err);
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+        }
+    });
+    // Optional: Press Enter key to login
+    [loginEmailInput, loginPasswordInput].forEach(input => {
+      input.addEventListener('keydown', e => {
+        if(e.key === 'Enter') loginBtn.click();
+      });
+    });
+  </script>
+</body>
+</html>
