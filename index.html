@@ -127,9 +127,148 @@
     .view { display:block; }
     .view.hidden { display:none; }
 
+    /* ===== ENHANCED DASHBOARD STYLES ===== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: all 0.3s var(--ease);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(15,23,42,.12);
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 10px 0;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .stat-label {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .timer-display {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, var(--text), var(--muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      margin: 10px 0;
+    }
+    
+    /* SIMPLIFIED STATUS SYSTEM - Green for Working, Red for Idle/Break */
+    .status-idle {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+    
+    .status-working {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+    }
+    
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .control-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-large {
+      padding: 14px 24px;
+      font-size: 16px;
+      flex: 1;
+      min-width: 140px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      border-radius: 3px;
+      transition: width 0.3s var(--ease);
+    }
+    
+    .session-info {
+      background: rgba(37, 99, 235, 0.05);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    
+    .session-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    
+    .session-label {
+      color: var(--muted);
+    }
+    
+    .session-value {
+      font-weight: 600;
+    }
+
     /* small accessibility tweaks for small screens */
     @media (max-width:480px){
       .logo-menu { left:10px; right:10px; width:auto; }
+      .control-row { flex-direction: column; }
+      .btn-large { width: 100%; }
     }
   </style>
 </head>
@@ -186,64 +325,113 @@
           </div>
         </div>
 
-        <!-- user info -->
+        <!-- Enhanced user info with SIMPLIFIED status indicator -->
         <div id="user-info" style="display:flex; align-items:center; gap:10px;">
-          <span id="status-indicator" style="width:15px; height:15px; border-radius:50%; display:inline-block; background:red;"></span>
-          <span id="user-text">User: Not logged in</span>
+          <div id="status-indicator" class="status-indicator status-idle">
+            <div class="dot"></div>
+            <span>Idle</span>
+          </div>
+          <span id="user-text">John Doe</span>
           <span id="last-active" style="margin-left:10px; font-size:0.9em; color:#555;"></span>
         </div>
       </div>
     </div>
   </header>
 
-<!-- DASHBOARD view (default) -->
-<!-- DASHBOARD view (default) - REMOVE LOGIN FORM -->
-<section id="view-dashboard" class="view">
-  <section class="card">
-    <div id="user-welcome">
-      <h2>Welcome, <span id="user-display-name">User</span>!</h2>
-      <p>You are logged in and ready to track your time.</p>
-    </div>
-
-    <div class="row" style="margin-top:14px; flex-direction:column; gap:12px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:12px; flex-wrap:wrap;">
-        <div class="controls" style="align-items:center;">
-          <button id="start-btn" class="btn">Start Tracking</button>
-          <button id="stop-btn" class="btn secondary" disabled>Stop</button>
-          <button id="logout-btn" class="btn danger">Logout</button>
+  <main class="wrap">
+    <!-- DASHBOARD view (SIMPLIFIED) -->
+    <section id="view-dashboard" class="view">
+      <div class="card">
+        <div id="user-welcome">
+          <h2>Welcome, <span id="user-display-name">John Doe</span>!</h2>
+          <p>Track your work time efficiently and take breaks when needed.</p>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <div class="pill" id="work-timer-pill"><strong>Work:</strong> <span id="work-timer">00:00:00</span></div>
-          <div class="pill" id="break-timer-pill"><strong>Break:</strong> <span id="break-timer">00:00:00</span></div>
+        <!-- Status and Timer Section -->
+        <div class="statusbar">
+          <div class="timer-display" id="main-timer">00:00:00</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="session-progress" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- SIMPLIFIED Stats Grid -->
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-label">Today's Work</div>
+            <div class="stat-value" id="today-work">00:00</div>
+            <div class="sub">Active work time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today's Break</div>
+            <div class="stat-value" id="today-break">00:00</div>
+            <div class="sub">Break time taken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Current Session</div>
+            <div class="stat-value" id="current-session">00:00</div>
+            <div class="sub">Active session time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Breaks Taken</div>
+            <div class="stat-value" id="breaks-taken-value">0</div>
+            <div class="sub">Total breaks today</div>
+          </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+          <div class="control-row">
+            <button id="start-btn" class="btn btn-large">Start Tracking</button>
+            <button id="stop-btn" class="btn btn-large secondary" disabled>Stop Tracking</button>
+            <button id="logout-btn" class="btn btn-large danger">Logout</button>
+          </div>
+          
+          <div class="control-row">
+            <button id="start-break-btn" class="btn secondary">Start Break</button>
+            <button id="stop-break-btn" class="btn secondary" disabled>Stop Break</button>
+            <button id="quick-break-btn" class="btn secondary">5 Min Break</button>
+            <button id="lunch-break-btn" class="btn secondary">Lunch Break</button>
+          </div>
+        </div>
+
+        <!-- SIMPLIFIED Session Information -->
+        <div class="session-info">
+          <h3 style="margin-top:0;">Current Session</h3>
+          <div class="session-row">
+            <span class="session-label">Started:</span>
+            <span class="session-value" id="session-start">Not started</span>
+          </div>
+          <div class="session-row">
+            <span class="session-label">Status:</span>
+            <span class="session-value" id="session-status">Idle</span>
+          </div>
+          <div class="session-row">
+            <span class="session-label">Breaks Taken:</span>
+            <span class="session-value" id="breaks-taken">0</span>
+          </div>
+          <div class="session-row">
+            <span class="session-label">Session Duration:</span>
+            <span class="session-value" id="session-duration">00:00:00</span>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div style="display:flex; gap:10px; align-items:center; width:100%; justify-content:space-between;">
-        <div class="controls">
-          <button id="start-break-btn" class="btn secondary">Start Break</button>
-          <button id="stop-break-btn" class="btn secondary" disabled>Stop Break</button>
+    <!-- SCREENSHOTS view -->
+    <section id="view-screenshots" class="view hidden">
+      <section class="card" style="grid-column:1 / -1;">
+        <h2>Recent Screenshots</h2>
+        <div id="shots-only" class="shots">
+          <!-- dynamically populated by renderer.js -->
         </div>
-      </div>
-    </div>
-  </section>
-</section>
+        <div id="shots-empty" class="text-muted" style="text-align:center; padding:20px;">
+          No screenshots yet
+        </div>
+      </section>
+    </section>
 
-
-<!-- SCREENSHOTS view (ONLY screenshots area) -->
-<section id="view-screenshots" class="view hidden">
-  <section class="card" style="grid-column:1 / -1;">
-    <h2>Recent Screenshots</h2>
-    <div id="shots-only" class="shots">
-      <!-- dynamically populated by renderer.js -->
-    </div>
-    <div id="shots-empty" class="text-muted" style="text-align:center; padding:20px;">
-      No screenshots yet
-    </div>
-  </section>
-</section>
-
-    <!-- ACTIVITY LOG view (ONLY activity list area) -->
+    <!-- ACTIVITY LOG view -->
     <section id="view-activity" class="view hidden">
       <section class="card" style="grid-column:1 / -1;">
         <h2>Activity Log</h2>
@@ -252,6 +440,7 @@
       </section>
     </section>
   </main>
+
   <!-- ripple helper retained -->
   <script>
     document.addEventListener('pointermove', e => {
@@ -263,97 +452,284 @@
     });
   </script>
 
-<script>
-(function(){
-  const logoBtn = document.getElementById('logoBtn');
-  const logoMenu = document.getElementById('logoMenu');
-  const menuButtons = logoMenu.querySelectorAll('button[role="menuitem"]');
-  const views = {
-    dashboard: document.getElementById('view-dashboard'),
-    screenshots: document.getElementById('view-screenshots'),
-    activity: document.getElementById('view-activity')
-  };
+  <script>
+    (function(){
+      const logoBtn = document.getElementById('logoBtn');
+      const logoMenu = document.getElementById('logoMenu');
+      const menuButtons = logoMenu.querySelectorAll('button[role="menuitem"]');
+      const views = {
+        dashboard: document.getElementById('view-dashboard'),
+        screenshots: document.getElementById('view-screenshots'),
+        activity: document.getElementById('view-activity')
+      };
 
-  // Show view (keeps header intact)
-  function showView(name){
-    Object.keys(views).forEach(k=>{
-      if(k === name){
-        views[k].classList.remove('hidden');
-        // mark active menu button
-        logoMenu.querySelector(`[data-view="${k}"]`)?.classList.add('active');
-      } else {
-        views[k].classList.add('hidden');
-        logoMenu.querySelector(`[data-view="${k}"]`)?.classList.remove('active');
+      // Show view (keeps header intact)
+      function showView(name){
+        Object.keys(views).forEach(k=>{
+          if(k === name){
+            views[k].classList.remove('hidden');
+            // mark active menu button
+            logoMenu.querySelector(`[data-view="${k}"]`)?.classList.add('active');
+          } else {
+            views[k].classList.add('hidden');
+            logoMenu.querySelector(`[data-view="${k}"]`)?.classList.remove('active');
+          }
+        });
+        // close menu after selecting
+        toggleMenu(false);
       }
-    });
-    // close menu after selecting
-    toggleMenu(false);
-  }
 
-  // toggle menu open/close
-  function toggleMenu(open){
-    const isOpen = logoMenu.classList.contains('show');
-    const shouldOpen = (typeof open === 'boolean') ? open : !isOpen;
-    if(shouldOpen){
-      logoMenu.classList.add('show');
-      logoBtn.setAttribute('aria-expanded','true');
-      // focus first item for accessibility
-      menuButtons[0].focus();
-    } else {
-      logoMenu.classList.remove('show');
-      logoBtn.setAttribute('aria-expanded','false');
-      // logoBtn.focus();
-    }
-  }
+      // toggle menu open/close
+      function toggleMenu(open){
+        const isOpen = logoMenu.classList.contains('show');
+        const shouldOpen = (typeof open === 'boolean') ? open : !isOpen;
+        if(shouldOpen){
+          logoMenu.classList.add('show');
+          logoBtn.setAttribute('aria-expanded','true');
+          // focus first item for accessibility
+          menuButtons[0].focus();
+        } else {
+          logoMenu.classList.remove('show');
+          logoBtn.setAttribute('aria-expanded','false');
+        }
+      }
 
-  // clicking the TT logo toggles the menu
-  logoBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    toggleMenu();
-  });
+      // clicking the TT logo toggles the menu
+      logoBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        toggleMenu();
+      });
 
-  // keyboard handling...
-  logoBtn.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' '){
-      e.preventDefault();
-      toggleMenu();
-    } else if(e.key === 'ArrowDown'){
-      e.preventDefault();
-      toggleMenu(true);
-    }
-  });
+      // keyboard handling...
+      logoBtn.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          toggleMenu();
+        } else if(e.key === 'ArrowDown'){
+          e.preventDefault();
+          toggleMenu(true);
+        }
+      });
 
-  // menu item click handlers...
-  menuButtons.forEach(btn=>{
-    btn.addEventListener('click', function(){
-      const view = btn.dataset.view;
-      if(view) showView(view);
-    });
-    btn.addEventListener('keydown', function(e){
-      const idx = Array.prototype.indexOf.call(menuButtons, btn);
-      if(e.key === 'ArrowDown'){ e.preventDefault(); menuButtons[(idx+1)%menuButtons.length].focus(); }
-      if(e.key === 'ArrowUp'){ e.preventDefault(); menuButtons[(idx-1+menuButtons.length)%menuButtons.length].focus(); }
-      if(e.key === 'Escape'){ toggleMenu(false); }
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); btn.click(); }
-    });
-  });
+      // menu item click handlers...
+      menuButtons.forEach(btn=>{
+        btn.addEventListener('click', function(){
+          const view = btn.dataset.view;
+          if(view) showView(view);
+        });
+        btn.addEventListener('keydown', function(e){
+          const idx = Array.prototype.indexOf.call(menuButtons, btn);
+          if(e.key === 'ArrowDown'){ e.preventDefault(); menuButtons[(idx+1)%menuButtons.length].focus(); }
+          if(e.key === 'ArrowUp'){ e.preventDefault(); menuButtons[(idx-1+menuButtons.length)%menuButtons.length].focus(); }
+          if(e.key === 'Escape'){ toggleMenu(false); }
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); btn.click(); }
+        });
+      });
 
-document.addEventListener('click', function(e){
-  const target = e.target;
-  // only close menu if click is truly outside menu AND not inside any form input
-  if(!logoMenu.contains(target) && target !== logoBtn && !logoBtn.contains(target) && target.closest('input,textarea,select') === null){
-    toggleMenu(false);
-  }
-});
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') toggleMenu(false); });
+      document.addEventListener('click', function(e){
+        const target = e.target;
+        // only close menu if click is truly outside menu AND not inside any form input
+        if(!logoMenu.contains(target) && target !== logoBtn && !logoBtn.contains(target) && target.closest('input,textarea,select') === null){
+          toggleMenu(false);
+        }
+      });
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') toggleMenu(false); });
 
-  // initialize default
-  showView('dashboard');
+      // initialize default
+      showView('dashboard');
 
-  // Optional: allow programmatic showView calls
-  window.showAppView = showView;
-})();
-</script>
+      // Optional: allow programmatic showView calls
+      window.showAppView = showView;
+    })();
+
+    // Enhanced Dashboard Functionality
+    (function() {
+      // State management
+      let state = {
+        isTracking: false,
+        isOnBreak: false,
+        startTime: null,
+        breakStartTime: null,
+        totalWorkTime: 0,
+        totalBreakTime: 0,
+        currentSessionTime: 0,
+        breaksTaken: 0
+      };
+
+      // DOM elements
+      const startBtn = document.getElementById('start-btn');
+      const stopBtn = document.getElementById('stop-btn');
+      const startBreakBtn = document.getElementById('start-break-btn');
+      const stopBreakBtn = document.getElementById('stop-break-btn');
+      const quickBreakBtn = document.getElementById('quick-break-btn');
+      const lunchBreakBtn = document.getElementById('lunch-break-btn');
+      const mainTimer = document.getElementById('main-timer');
+      const statusIndicator = document.getElementById('status-indicator');
+      const sessionStatus = document.getElementById('session-status');
+      const sessionStart = document.getElementById('session-start');
+      const breaksTaken = document.getElementById('breaks-taken');
+      const breaksTakenValue = document.getElementById('breaks-taken-value');
+      const todayWork = document.getElementById('today-work');
+      const todayBreak = document.getElementById('today-break');
+      const currentSession = document.getElementById('current-session');
+      const sessionDuration = document.getElementById('session-duration');
+      const sessionProgress = document.getElementById('session-progress');
+
+      // Timer function
+      function updateTimers() {
+        if (state.isTracking && !state.isOnBreak) {
+          state.currentSessionTime = Math.floor((Date.now() - state.startTime) / 1000);
+          state.totalWorkTime = state.currentSessionTime;
+        } else if (state.isOnBreak) {
+          state.totalBreakTime += 1;
+        }
+
+        // Update displays
+        mainTimer.textContent = formatTime(state.currentSessionTime);
+        sessionDuration.textContent = formatTime(state.currentSessionTime);
+        todayWork.textContent = formatTimeShort(state.totalWorkTime);
+        todayBreak.textContent = formatTimeShort(state.totalBreakTime);
+        currentSession.textContent = formatTimeShort(state.currentSessionTime);
+        
+        // Update progress bar (example: 8-hour work day)
+        const progress = Math.min(100, Math.round((state.totalWorkTime / (8 * 3600)) * 100));
+        sessionProgress.style.width = `${progress}%`;
+      }
+
+      // Time formatting helpers
+      function formatTime(seconds) {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      function formatTimeShort(seconds) {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+      }
+
+      function formatDateTime(date) {
+        return date.toLocaleTimeString() + ' ' + date.toLocaleDateString();
+      }
+
+      // State management functions
+      function startTracking() {
+        state.isTracking = true;
+        state.startTime = Date.now();
+        state.currentSessionTime = 0;
+        
+        updateUI();
+        sessionStart.textContent = formatDateTime(new Date());
+        sessionStatus.textContent = 'Working';
+        
+        // Update status indicator - GREEN for working
+        statusIndicator.className = 'status-indicator status-working';
+        statusIndicator.innerHTML = '<div class="dot"></div><span>Working</span>';
+      }
+
+      function stopTracking() {
+        state.isTracking = false;
+        state.isOnBreak = false;
+        
+        updateUI();
+        sessionStatus.textContent = 'Idle';
+        
+        // Update status indicator - RED for idle
+        statusIndicator.className = 'status-indicator status-idle';
+        statusIndicator.innerHTML = '<div class="dot"></div><span>Idle</span>';
+      }
+
+      function startBreak() {
+        if (!state.isTracking) return;
+        
+        state.isOnBreak = true;
+        state.breakStartTime = Date.now();
+        state.breaksTaken++;
+        
+        updateUI();
+        sessionStatus.textContent = 'On Break';
+        breaksTaken.textContent = state.breaksTaken;
+        breaksTakenValue.textContent = state.breaksTaken;
+        
+        // Update status indicator - RED for break (inactive)
+        statusIndicator.className = 'status-indicator status-idle';
+        statusIndicator.innerHTML = '<div class="dot"></div><span>On Break</span>';
+      }
+
+      function stopBreak() {
+        if (!state.isTracking || !state.isOnBreak) return;
+        
+        state.isOnBreak = false;
+        const breakDuration = Math.floor((Date.now() - state.breakStartTime) / 1000);
+        state.totalBreakTime += breakDuration;
+        
+        updateUI();
+        sessionStatus.textContent = 'Working';
+        
+        // Update status indicator - GREEN for working
+        statusIndicator.className = 'status-indicator status-working';
+        statusIndicator.innerHTML = '<div class="dot"></div><span>Working</span>';
+      }
+
+      function updateUI() {
+        // Update button states
+        startBtn.disabled = state.isTracking;
+        stopBtn.disabled = !state.isTracking;
+        startBreakBtn.disabled = !state.isTracking || state.isOnBreak;
+        stopBreakBtn.disabled = !state.isTracking || !state.isOnBreak;
+        quickBreakBtn.disabled = !state.isTracking || state.isOnBreak;
+        lunchBreakBtn.disabled = !state.isTracking || state.isOnBreak;
+      }
+
+      // Event listeners
+      startBtn.addEventListener('click', startTracking);
+      stopBtn.addEventListener('click', stopTracking);
+      startBreakBtn.addEventListener('click', startBreak);
+      stopBreakBtn.addEventListener('click', stopBreak);
+      
+      quickBreakBtn.addEventListener('click', function() {
+        startBreak();
+        // Auto-stop break after 5 minutes
+        setTimeout(() => {
+          if (state.isOnBreak) {
+            stopBreak();
+          }
+        }, 5 * 60 * 1000);
+      });
+      
+      lunchBreakBtn.addEventListener('click', function() {
+        startBreak();
+        // Auto-stop break after 30 minutes
+        setTimeout(() => {
+          if (state.isOnBreak) {
+            stopBreak();
+          }
+        }, 30 * 60 * 1000);
+      });
+
+      // Complete task button (example functionality)
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        if (state.isTracking) {
+          if (confirm('Are you sure you want to logout? This will stop your current tracking session.')) {
+            stopTracking();
+            // Add logout logic here
+            alert('Logged out successfully');
+          }
+        } else {
+          // Add logout logic here
+          alert('Logged out successfully');
+        }
+      });
+
+      // Initialize UI
+      updateUI();
+      
+      // Start timer updates
+      setInterval(updateTimers, 1000);
+    })();
+  </script>
 
   <!-- IMPORTANT: load renderer AFTER DOM (left intact) -->
   <script src="renderer.js"></script>
