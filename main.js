@@ -9,7 +9,7 @@ const mysql = require('mysql2/promise');
 const screenshot = require('screenshot-desktop');
 
 let autoScreenshotInterval = null;
-const AUTO_SCREENSHOT_MS = 2 * 60 * 1000; // 2 minutes
+const AUTO_SCREENSHOT_MS = 1 * 60 * 1000; // 2 minutes
 let win;
 let db;
 let currentUserId = null;
@@ -118,32 +118,7 @@ function startIdleWatcher() {
         }
 
         // Take screenshot immediately when idle starts
-        if (!manualBreakActive) {
-            try {
-                const buf = await screenshot({ format: 'png' });
-                const baseDir = path.join(
-                    SCREENSHOT_BASE_FOLDER,
-                    dayjs().format('YYYY-MM-DD'),
-                    String(currentSessionId)
-                );
-                fsExtra.mkdirpSync(baseDir);
-
-                const filename = `${dayjs().format('HH-mm-ss')}.png`;
-                const fullPath = path.join(baseDir, filename);
-                fs.writeFileSync(fullPath, buf);
-
-                const tsScreenshot = dayjs().format('YYYY-MM-DD HH:mm:ss');
-                await db.query(
-                    'INSERT INTO activity (user_id, session_id, ts, is_idle, is_break, screenshot_path, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [currentUserId, currentSessionId, tsScreenshot, 1, 1, fullPath, 'idle_screenshot']
-                );
-
-                if (win && win.webContents) {
-                    win.webContents.send('screenshot-captured', `file://${fullPath}`);
-                }
-            } catch (err) {
-                console.error('Error taking idle screenshot:', err);
-            }
+        if (!manualBreakActive){
         }
       }
 
@@ -941,39 +916,6 @@ ipcMain.handle('logout', async () => {
 ipcMain.handle('get-tracking-status', async () => ({
   trackingActive, currentUserId, currentSessionId, manualBreakActive, idleBreakActive
 }));
-
-ipcMain.handle('save-screenshot-and-log', async (_evt, { dataURL }) => {
-  if (!trackingActive || !currentUserId || !currentSessionId)
-    return { saved: false, reason: 'Not tracking or no session' };
-  if (manualBreakActive) return { saved: false, reason: 'On manual break' };
-  if (powerMonitor.getSystemIdleTime() >= IDLE_THRESHOLD_SECONDS)
-    return { saved: false, reason: `Idle >= ${IDLE_THRESHOLD_SECONDS}s` };
-
-  const buf = decodeBase64Image(dataURL);
-  if (!buf) return { saved: false, reason: 'Invalid image data' };
-
-  const baseDir = path.join(
-    SCREENSHOT_BASE_FOLDER,
-    dayjs().format('YYYY-MM-DD'),
-    String(currentSessionId)
-  );
-  fs.mkdirSync(baseDir, { recursive: true });
-
-  const fileName = `${dayjs().format('HH-mm-ss')}.png`;
-  const fullPath = path.join(baseDir, fileName);
-  fs.writeFileSync(fullPath, buf);
-
-  const ts = dayjs().format('YYYY-MM-DD HH:mm:ss');
-  await db.query(
-    'INSERT INTO activity (user_id, session_id, ts, is_idle, is_break, screenshot_path, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [currentUserId, currentSessionId, ts, 0, 0, fullPath, null]
-  );
-
-  // 🔹 Step 2: Send screenshot to renderer
-  if (win && win.webContents) win.webContents.send('screenshot-captured', `file://${fullPath}`);
-
-  return { saved: true, path: `file://${fullPath}`, ts };
-});
 
 // Log idle tick
 ipcMain.handle('log-idle', async () => {

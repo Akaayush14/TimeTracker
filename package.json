@@ -10,7 +10,7 @@
     "start": "electron ."
   },
   "dependencies": {
-    "dayjs": "1.11.18",
+    "dayjs": "^1.11.18",
     "exceljs": "4.4.1-prerelease.0",
     "googleapis": "159.0.0",
     "mysql2": "3.14.5-canary.c091f1ba",

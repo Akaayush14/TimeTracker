@@ -91,76 +91,6 @@ function appendShot(src, ts) {
   updateShotsEmptyMessage();
 }
 
-// ---------- capture desktop ----------
-async function captureDesktopPNG() {
-  const stream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'monitor'}, audio:false});
-  try {
-    const track = stream.getVideoTracks()[0];
-    const imageCapture = new ImageCapture(track);
-    const bitmap = await imageCapture.grabFrame();
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0);
-    const dataURL = canvas.toDataURL('image/png');
-    track.stop();
-    return dataURL;
-  } finally {
-    stream.getTracks().forEach(t => t.stop());
-  }
-}
-
-// ---------- capture loop ----------
-function startCaptureLoop() {
-  if (captureInterval) return;
-  doOneCapture(); // immediate capture
-  captureInterval = setInterval(doOneCapture, 20000); // every 20 seconds
-}
-
-function stopCaptureLoop() {
-  if (captureInterval) {
-    clearInterval(captureInterval);
-    captureInterval = null;
-  }
-}
-
-// ---------- capture and save ----------
-async function doOneCapture() {
-  if (!currentUser) return;
-  if (isOnManualBreak) {
-    appendActivity(`Capture skipped: On manual break`);
-    return;
-  }
-  if (statusIndicatorEl && statusIndicatorEl.style.background === 'orange') {
-    appendActivity(`Capture skipped: User idle`);
-    return;
-  }
-
-  try {
-    const dataURL = await captureDesktopPNG();
-    if (!dataURL || dataURL.trim() === '') {
-      appendActivity(`Capture skipped: empty data`);
-      return;
-    }
-
-    const res = await window.api.saveScreenshotAndLog({ dataURL });
-
-    if (res.saved && res.path && res.path.trim() !== '') {
-      appendShot(res.path, res.ts);
-      appendActivity(`Capture saved at ${res.ts}`);
-    } else {
-      appendActivity(`Capture skipped (${res.reason || 'unknown'})`);
-      if(res.reason && (res.reason.includes('Idle') || res.reason.includes('break'))) {
-        addNotification({ type: 'warning', message: `Capture skipped: ${res.reason}` });
-      }
-    }
-  } catch(err) {
-    appendActivity(`Capture error: ${err.message}`);
-    addNotification({ type:'warning', message:`Capture error: ${err.message}` });
-  }
-}
-
 // ---------- listen to main process screenshot ----------
 if(window.api && typeof window.api.onScreenshotCaptured === 'function') {
   window.api.onScreenshotCaptured((filePath) => {
@@ -338,7 +268,6 @@ stopBtn.addEventListener('click', async ()=>{ await stopTracking(); });
 async function startTracking() { 
   enable(startBtn,false); 
   enable(stopBtn,true); 
-  startCaptureLoop(); 
   startWorkTimer(); 
   appendActivity('Tracking started'); 
 }
@@ -346,7 +275,6 @@ async function startTracking() {
 async function stopTracking() { 
   enable(startBtn,true); 
   enable(stopBtn,false); 
-  stopCaptureLoop(); 
   stopWorkTimer(); 
   stopBreakTimer(); 
   appendActivity('Tracking stopped'); 

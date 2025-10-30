@@ -17,9 +17,6 @@ contextBridge.exposeInMainWorld('api', {
   logIdle: () => ipcRenderer.invoke('log-idle'),
   idleBreakStart: () => ipcRenderer.invoke('idle-break-start'),
   idleBreakStop: () => ipcRenderer.invoke('idle-break-stop'),
-
-  // Capture screenshot
-  captureScreenshot: () => ipcRenderer.invoke('save-screenshot-and-log', {}),
   
   // Screenshot captured listener
   onScreenshotCaptured: (callback) => {
@@ -33,12 +30,6 @@ contextBridge.exposeInMainWorld('api', {
   startBreak: () => ipcRenderer.invoke('start-break'),
   stopBreak: () => ipcRenderer.invoke('stop-break'),
 
-  // Screenshots / file picker
-  saveScreenshotAndLog: (dataURL) => {
-    if (!dataURL) return Promise.reject('No screenshot data provided'); // Prevent empty screenshots
-    return ipcRenderer.invoke('save-screenshot-and-log', { dataURL });
-  },
-  pickFolder: () => ipcRenderer.invoke('pick-folder'),
 
   // Admin methods
   getAdminStats: () => ipcRenderer.invoke('get-admin-stats'),
